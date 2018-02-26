@@ -1,0 +1,56 @@
+{
+  "name": "page-loader-garrysh",
+  "version": "0.0.1",
+  "description": "Node.JS command line utility for loading page content",
+  "main": "dist/index.js",
+  "bin": {
+    "index": "dist/bin/page-loader-garrysh.js"
+  },
+  "engines": {
+    "node": "8"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "jest",
+    "build": "NODE_ENV=production babel src --out-dir dist --source-maps inline",
+    "babel-node": "babel-node",
+    "prepublishOnly": "npm run build",
+    "eslint": "eslint"
+  },
+  "devDependencies": {
+    "babel-cli": "*",
+    "babel-core": "*",
+    "babel-eslint": "*",
+    "babel-jest": "*",
+    "babel-preset-env": "*",
+    "babel-preset-stage-0": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-plugin-import": "*",
+    "eslint-plugin-jest": "*",
+    "istanbul": "*",
+    "jest": "*",
+    "jest-cli": "*",
+    "nock": "*"
+  },
+  "dependencies": {
+    "commander": "^2.14.1",
+    "axios": "^0.18.0",
+    "mz": "^2.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GarrySh/project-lvl3-s186.git"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "author": "Garry Sh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GarrySh/project-lvl3-s186/issues"
+  },
+  "homepage": "https://github.com/GarrySh/project-lvl3-s186#readme"
+}
