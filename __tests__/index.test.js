@@ -1,4 +1,4 @@
-import nock from 'nock';
+// import nock from 'nock';
 import path from 'path';
 import fs from 'mz/fs';
 import pageLoader from '../src';
