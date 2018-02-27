@@ -10,8 +10,7 @@ commander
   .arguments('<URI>')
   .option('-o, --output [directory]', 'folder to download')
   .action((uri, options) => {
-    const outputDir = options.output || '';
-    // console.log(URI, outputDir);
+    const outputDir = options.output || process.cwd();
     pageLoader(uri, outputDir);
   })
   .parse(process.argv);

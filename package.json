@@ -1,10 +1,10 @@
 {
   "name": "page-loader-garrysh",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "Node.JS command line utility for loading page content",
   "main": "dist/index.js",
   "bin": {
-    "index": "dist/bin/page-loader-garrysh.js"
+    "page-loader-garrysh": "dist/bin/page-loader-garrysh.js"
   },
   "engines": {
     "node": "8"
