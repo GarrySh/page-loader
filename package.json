@@ -1,6 +1,6 @@
 {
   "name": "page-loader-garrysh",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Node.JS command line utility for loading page content",
   "main": "dist/index.js",
   "bin": {
@@ -38,7 +38,8 @@
   "dependencies": {
     "commander": "^2.14.1",
     "axios": "^0.18.0",
-    "mz": "^2.7.0"
+    "mz": "^2.7.0",
+    "fs-extra": "^5.0.0"
   },
   "repository": {
     "type": "git",

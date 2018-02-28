@@ -8,11 +8,8 @@ commander
   .description('download internet page content to local directory')
   .version(version)
   .arguments('<URI>')
-  .option('-o, --output [directory]', 'folder to download')
-  .action((uri, options) => {
-    const outputDir = options.output || process.cwd();
-    pageLoader(uri, outputDir);
-  })
+  .option('-o, --output [directory]', 'folder to download', process.cwd())
+  .action((uri, options) => pageLoader(uri, options.output))
   .parse(process.argv);
 
 if (!process.argv.slice(2).length) {

@@ -1,8 +1,8 @@
 import nock from 'nock';
 import path from 'path';
 import fs from 'mz/fs';
+import fse from 'fs-extra';
 import os from 'os';
-import rmdir from '../src/utils';
 import pageLoader from '../src';
 
 nock.disableNetConnect();
@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  tmpDirs.map(rmdir);
+  tmpDirs.map(pathToFolder => fse.remove(pathToFolder).catch(err => console.error(err)));
 });
 
 test('test', async () => {
