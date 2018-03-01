@@ -17,8 +17,7 @@ const pageLoader = (uri, outputDir) => {
   };
   return axios
     .get(uri, config)
-    .then(response => fs.writeFile(filePath, response.data, { flag: 'ax', encoding: 'utf8' }))
-    .catch(err => console.error(err));
+    .then(response => fs.writeFile(filePath, response.data, { flag: 'ax', encoding: 'utf8' }));
 };
 
 export default pageLoader;
