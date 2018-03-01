@@ -3,6 +3,7 @@ import path from 'path';
 // import httpAdapter from 'axios/lib/adapters/http';
 import fs from 'mz/fs';
 import axios from 'axios';
+import cheerio from 'cheerio';
 
 const pageLoader = (uri, outputDir) => {
   const fileExtension = 'html';
@@ -17,7 +18,19 @@ const pageLoader = (uri, outputDir) => {
   };
   return axios
     .get(uri, config)
-    .then(response => fs.writeFile(filePath, response.data, { flag: 'ax', encoding: 'utf8' }));
+    .then((response) => {
+      const cfg = {
+        withDomLvl1: true,
+        normalizeWhitespace: true,
+        xmlMode: true,
+        decodeEntities: false,
+      };
+      const $ = cheerio.load(response.data, cfg);
+      // console.log($('html').find('img').toArray()[0]);
+      // console.log($('html').html());
+      return $('html').html();
+    })
+    .then(response => fs.writeFile(filePath, response, { flag: 'ax', encoding: 'utf8' }));
 };
 
 export default pageLoader;
