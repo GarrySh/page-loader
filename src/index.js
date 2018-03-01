@@ -10,27 +10,29 @@ const pageLoader = (uri, outputDir) => {
   // ^\w+:\/\/ - select scheme
   const fileName = uri.replace(/^\w+:\/\//g, '').replace(/\W/g, '-');
   const filePath = path.resolve(outputDir, `${fileName}.${fileExtension}`);
-  const config = {
+  const axiosConfig = {
     headers: {
       Accept: 'text/html',
       'Accept-Language': 'en,en-US;q=0.7,ru;q=0.3',
     },
   };
+  const tagsForDownload = {
+    link: 'href',
+    script: 'src',
+    img: 'src',
+  };
+
   return axios
-    .get(uri, config)
+    .get(uri, axiosConfig)
     .then((response) => {
-      const cfg = {
-        withDomLvl1: true,
-        normalizeWhitespace: true,
-        xmlMode: true,
-        decodeEntities: false,
-      };
-      const $ = cheerio.load(response.data, cfg);
-      // console.log($('html').find('img').toArray()[0]);
+      const $ = cheerio.load(response.data, { decodeEntities: false });
+      const result = $('img').attr('src').toString();
+      console.log(result);
       // console.log($('html').html());
-      return $('html').html();
+      // return $('html').html();
+      return response.data;
     })
-    .then(response => fs.writeFile(filePath, response, { flag: 'ax', encoding: 'utf8' }));
+    .then(data => fs.writeFile(filePath, data, { flag: 'ax', encoding: 'utf8' }));
 };
 
 export default pageLoader;
