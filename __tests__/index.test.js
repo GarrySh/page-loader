@@ -20,7 +20,8 @@ afterAll(async () => {
 test('download page content', async () => {
   const tmpDirPath = await fs.mkdtemp(tmpDirTemplate);
   tmpDirs.push(tmpDirPath);
-  const mockContent = await fs.readFile('__tests__/__fixtures__/hexlet-io-courses.html', 'utf8');
+  const mockContent = await fs.readFile('__tests__/__fixtures__/page_before.html', 'utf8');
+  const requiredContent = await fs.readFile('__tests__/__fixtures__/page_after.html', 'utf8');
   nock('https://hexlet.io')
     .get('/courses')
     .reply(200, mockContent);
@@ -29,7 +30,7 @@ test('download page content', async () => {
   await pageLoader('https://hexlet.io/courses', tmpDirPath);
   try {
     const fileContent = await fs.readFile(filePath, 'utf8');
-    expect(fileContent).toBe(mockContent);
+    expect(fileContent).toBe(requiredContent);
   } catch (err) {
     expect(err).toBeUndefined();
   }
