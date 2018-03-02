@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import os from 'os';
 import pageLoader from '../src';
 
-nock.disableNetConnect();
+// nock.disableNetConnect();
 
 const tmpDirTemplate = path.join(os.tmpdir(), 'hexlet-');
 const tmpDirs = [];
