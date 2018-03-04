@@ -6,10 +6,15 @@ import cheerio from 'cheerio';
 // import httpAdapter from 'axios/lib/adapters/http';
 // axios.defaults.adapter = httpAdapter;
 
-const tagsPropertyForChange = {
+const tagsAttributeForChange = {
   link: 'href',
   script: 'src',
   img: 'src',
+};
+
+const isUriLocal = (uri) => {
+  const { protocol, hostname } = urlLib.parse(uri);
+  return !(hostname && protocol);
 };
 
 const getFileName = (uri) => {
@@ -19,29 +24,36 @@ const getFileName = (uri) => {
   return `${nameRoot}${ext}`;
 };
 
-const loadFile = (uri, filePath) => axios
-  .get(uri, { responseType: 'stream' })
-  .then(response => response.data.pipe(fs.createWriteStream(filePath)));
+const loadFiles = ({ links, pageBody }) => {
+  Promise.all(links.map(({ link, filePathToDownload }) => axios
+    .get(link, { responseType: 'stream' })
+    .then(response => response.data.pipe(fs.createWriteStream(filePathToDownload)))))
+  return pageBody;
+};
 
-const loadPage = (uri, dirPath, dirName) => axios
+const loadPage = uri => axios
   .get(uri, { headers: { Accept: 'text/html', 'Accept-Language': 'en,en-US;q=0.7,ru;q=0.3' } })
-  .then((response) => {
-    const $ = cheerio.load(response.data, { decodeEntities: false });
-    Promise.all(Object.keys(tagsPropertyForChange).map(propertyName =>
-      $(propertyName).each((i, tag) => {
-        const addr = $(tag).attr(tagsPropertyForChange[propertyName]);
-        if (addr) {
-          const fileName = getFileName(addr);
-          const filePathToDownload = pathLib.resolve(dirPath, fileName);
-          const filePathToPage = pathLib.join(dirName, fileName);
-          $(tag).attr(tagsPropertyForChange[propertyName], filePathToPage);
-          return loadFile(addr, filePathToDownload);
-        }
-        return Promise.resolve();
-      })));
-    const changedContent = $.html();
-    return changedContent;
-  });
+  .then(response => response.data);
+
+const changeAndParsePage = (pageData, dirPath, dirName) => {
+  const $ = cheerio.load(pageData, { decodeEntities: false });
+  const links = Object.keys(tagsAttributeForChange).reduce((acc, tag) => {
+    const attribute = tagsAttributeForChange[tag];
+    const currentLinks = $(`${tag}[${attribute}]`).toArray().reduce((accC, itemC) => {
+      const link = $(itemC).attr(attribute);
+      if (isUriLocal(link)) {
+        const fileName = getFileName(link);
+        const filePathToDownload = pathLib.resolve(dirPath, fileName);
+        const filePathToPage = pathLib.join(dirName, fileName);
+        $(itemC).attr(attribute, filePathToPage);
+        return [...accC, { link, filePathToDownload }];
+      }
+      return accC;
+    }, []);
+    return [...acc, ...currentLinks];
+  }, []);
+  return { links, pageBody: $.html() };
+};
 
 export default (uri, outputDir) => {
   const fileName = getFileName(uri);
@@ -51,6 +63,8 @@ export default (uri, outputDir) => {
 
   return fs.writeFile(filePath, '', { flag: 'ax' })
     .then(() => fs.mkdir(dirPath, '0775'))
-    .then(() => loadPage(uri, dirPath, dirName))
-    .then(data => fs.writeFile(filePath, data, { flag: 'w', encoding: 'utf8' }));
+    .then(() => loadPage(uri))
+    .then(pageData => changeAndParsePage(pageData, dirPath, dirName))
+    .then(parsedData => loadFiles(parsedData))
+    .then(pageBody => fs.writeFile(filePath, pageBody, { flag: 'w', encoding: 'utf8' }));
 };
