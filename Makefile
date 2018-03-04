@@ -24,3 +24,8 @@ build:
 clear:
 	rm -rf dist
 	rm -rf node_modules
+
+debug: build
+	mkdir /tmp/el11t
+	DEBUG="page-loader:*" dist/bin/page-loader-garrysh.js https://htmlacademy.ru -o /tmp/el11t
+	rm -rf /tmp/el11t

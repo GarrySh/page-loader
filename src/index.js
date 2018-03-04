@@ -3,9 +3,13 @@ import urlLib from 'url';
 import fs from 'mz/fs';
 import axios from 'axios';
 import cheerio from 'cheerio';
-import httpAdapter from 'axios/lib/adapters/http';
+import debug from 'debug';
+// import httpAdapter from 'axios/lib/adapters/http';
 
-axios.defaults.adapter = httpAdapter;
+// axios.defaults.adapter = httpAdapter;
+
+const logInfo = debug('page-loader:info');
+const logError = debug('page-loader:error');
 
 const tagsAttributeForChange = {
   link: 'href',
@@ -30,7 +34,13 @@ const getFileName = (uri) => {
 
 const loadFile = (link, filePathToDownload) => axios
   .get(link, { responseType: 'stream' })
-  .then(response => response.data.pipe(fs.createWriteStream(filePathToDownload)));
+  .then((response) => {
+    logInfo(`trying to download file ${link} to ${filePathToDownload}`);
+    return response.data.pipe(fs.createWriteStream(filePathToDownload));
+  }).catch((err) => {
+    logError(`error downloading file ${link} to ${filePathToDownload}`);
+    return err;
+  });
 
 const loadFiles = ({ links, pageBody }) =>
   Promise.all(links.map(({ link, filePathToDownload }) => loadFile(link, filePathToDownload)))
@@ -38,7 +48,10 @@ const loadFiles = ({ links, pageBody }) =>
 
 const loadPage = uri => axios
   .get(uri, { headers: { Accept: 'text/html', 'Accept-Language': 'en,en-US;q=0.7,ru;q=0.3' } })
-  .then(response => response.data);
+  .then((response) => {
+    logInfo(`trying to download page ${uri}`);
+    return response.data;
+  });
 
 const changeAndParsePage = (pageData, uri, dirPath, dirName) => {
   const $ = cheerio.load(pageData, { decodeEntities: false });
@@ -59,11 +72,11 @@ const changeAndParsePage = (pageData, uri, dirPath, dirName) => {
     }, []);
     return [...acc, ...currentLinks];
   }, []);
-  // console.log(links);
   return { links, pageBody: $.html() };
 };
 
 export default (uri, outputDir) => {
+  logInfo(`trying to download page ${uri} to directory ${outputDir}`);
   const fileName = getFileName(uri);
   const filePath = pathLib.resolve(outputDir, `${fileName}.html`);
   const dirName = `${fileName}_files`;
