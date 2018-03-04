@@ -7,19 +7,23 @@ import pageLoader from '../src';
 
 nock.disableNetConnect();
 
+const addr = 'https://ru.hexlet.io';
+const templatesDir = '__tests__/__fixtures__/';
 const tmpDirTemplate = path.join(os.tmpdir(), 'hexlet-');
 const tmpDirs = [];
 
 beforeAll(async () => {
-  const mockPage = await fs.readFile('__tests__/__fixtures__/page_before.html', 'utf8');
-  const mockImage = await fs.readFile('__tests__/__fixtures__/favicon-196x196.png');
-  nock('https://ru.hexlet.io')
-    .get('/courses')
-    .reply(200, mockPage)
-    .get('/favicon-196x196.png')
-    .reply(200, mockImage)
-    .get('/coursess')
-    .reply(404);
+  nock(addr).get('/courses')
+    .delay(100).replyWithFile(200, path.join(templatesDir, 'page_before.html'));
+  nock(addr).get('/favicon-196x196.png')
+    .delay(20).replyWithFile(200, path.join(templatesDir, 'favicon-196x196.png'));
+  nock(addr).get('/684image.png')
+    .delay(200).replyWithFile(200, path.join(templatesDir, '684image.png'));
+  nock(addr).get('/ea7image.png')
+    .delay(80).replyWithFile(200, path.join(templatesDir, 'ea7image.png'));
+  nock(addr).get('/f83image.png')
+    .delay(300).replyWithFile(200, path.join(templatesDir, 'f83image.png'));
+  nock(addr).get('/coursess').reply(404);
 });
 
 afterAll(async () => {
@@ -39,4 +43,3 @@ test('download page content', async () => {
     expect(err).toBeUndefined();
   }
 });
-
