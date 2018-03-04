@@ -27,7 +27,7 @@ const getFileName = (uri) => {
 const loadFiles = ({ links, pageBody }) => {
   Promise.all(links.map(({ link, filePathToDownload }) => axios
     .get(link, { responseType: 'stream' })
-    .then(response => response.data.pipe(fs.createWriteStream(filePathToDownload)))))
+    .then(response => response.data.pipe(fs.createWriteStream(filePathToDownload)))));
   return pageBody;
 };
 
