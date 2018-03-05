@@ -4,21 +4,19 @@ import fs from 'mz/fs';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import debug from 'debug';
-// import httpAdapter from 'axios/lib/adapters/http';
-// axios.defaults.adapter = httpAdapter;
 
 const logInfo = debug('page-loader:info');
 const logError = debug('page-loader:error');
 
-// const errorHandler = (err) => {
-//   if (err.response.status) {
-//     const errorText = `error get page ${err.config.url}`;
-//     logError(errorText);
-//     throw new Error(errorText);
-//   }
-//   logError(`error ${err.code}`);
-//   throw err;
-// };
+const errorHandler = (err) => {
+  if (err.response) {
+    const errorText = `error get page ${err.config.url} with status ${err.response.status}`;
+    logError(errorText);
+    return Promise.reject(errorText);
+  }
+  logError(`error ${err.code}`);
+  return Promise.reject(err);
+};
 
 const tagsAttributeForChange = {
   link: 'href',
@@ -56,7 +54,7 @@ const loadFiles = ({ links, pageBody }) =>
     .then(() => pageBody);
 
 const loadPage = uri => axios
-  .get(uri, { headers: { Accept: 'text/html', 'Accept-Language': 'en,en-US;q=0.7,ru;q=0.3' } })
+  .get(uri)
   .then((response) => {
     logInfo(`trying to download page ${uri}`);
     return response.data;
@@ -96,6 +94,6 @@ export default (uri, outputDir) => {
     .then(() => loadPage(uri))
     .then(pageData => changeAndParsePage(pageData, uri, dirPath, dirName))
     .then(parsedData => loadFiles(parsedData))
-    .then(pageBody => fs.writeFile(filePath, pageBody, { flag: 'w', encoding: 'utf8' }));
-  // .catch(err => errorHandler(err));
+    .then(pageBody => fs.writeFile(filePath, pageBody, { flag: 'w', encoding: 'utf8' }))
+    .catch(err => errorHandler(err));
 };
