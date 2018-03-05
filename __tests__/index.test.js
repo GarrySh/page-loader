@@ -20,15 +20,15 @@ const getTmpDir = async () => {
 
 beforeAll(async () => {
   nock(addr).get('/courses')
-    .delay(50).replyWithFile(200, path.join(mocksDir, 'page_before.html'));
+    .delay(10).replyWithFile(200, path.join(mocksDir, 'page_before.html'));
   nock(addr).get('/favicon-196x196.png')
-    .delay(20).replyWithFile(200, path.join(mocksDir, 'favicon-196x196.png'));
+    .delay(100).replyWithFile(200, path.join(mocksDir, 'favicon-196x196.png'));
   nock(addr).get('/684image.png')
     .delay(10).replyWithFile(200, path.join(mocksDir, '684image.png'));
   nock(addr).get('/ea7image.png')
     .delay(40).replyWithFile(200, path.join(mocksDir, 'ea7image.png'));
   nock(addr).get('/f83image.png')
-    .delay(100).replyWithFile(200, path.join(mocksDir, 'f83image.png'));
+    .delay(120).replyWithFile(200, path.join(mocksDir, 'f83image.png'));
   nock(addr).get('/coursess').reply(404);
 });
 

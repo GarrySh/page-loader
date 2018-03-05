@@ -4,6 +4,7 @@ import fs from 'mz/fs';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import debug from 'debug';
+import Listr from 'listr';
 
 const logInfo = debug('page-loader:info');
 const logError = debug('page-loader:error');
@@ -49,9 +50,13 @@ const loadFile = (link, filePathToDownload) => axios
     console.error(err);
   });
 
-const loadFiles = ({ links, pageBody }) =>
-  Promise.all(links.map(({ link, filePathToDownload }) => loadFile(link, filePathToDownload)))
-    .then(() => pageBody);
+const loadFiles = new Listr([
+  {
+    title: 'download page local files',
+    task: ({ links }) =>
+      Promise.all(links.map(({ link, filePathToDownload }) => loadFile(link, filePathToDownload))),
+  },
+]);
 
 const loadPage = uri => axios
   .get(uri)
@@ -93,7 +98,7 @@ export default (uri, outputDir) => {
     .then(() => fs.mkdir(dirPath, '0775'))
     .then(() => loadPage(uri))
     .then(pageData => changeAndParsePage(pageData, uri, dirPath, dirName))
-    .then(parsedData => loadFiles(parsedData))
-    .then(pageBody => fs.writeFile(filePath, pageBody, { flag: 'w', encoding: 'utf8' }))
+    .then(parsedData => loadFiles.run(parsedData))
+    .then(({ pageBody }) => fs.writeFile(filePath, pageBody, { flag: 'w', encoding: 'utf8' }))
     .catch(err => errorHandler(err));
 };
