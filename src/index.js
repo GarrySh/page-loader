@@ -5,11 +5,20 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import debug from 'debug';
 // import httpAdapter from 'axios/lib/adapters/http';
-
 // axios.defaults.adapter = httpAdapter;
 
 const logInfo = debug('page-loader:info');
 const logError = debug('page-loader:error');
+
+// const errorHandler = (err) => {
+//   if (err.response.status) {
+//     const errorText = `error get page ${err.config.url}`;
+//     logError(errorText);
+//     throw new Error(errorText);
+//   }
+//   logError(`error ${err.code}`);
+//   throw err;
+// };
 
 const tagsAttributeForChange = {
   link: 'href',
@@ -39,7 +48,7 @@ const loadFile = (link, filePathToDownload) => axios
     return response.data.pipe(fs.createWriteStream(filePathToDownload));
   }).catch((err) => {
     logError(`error downloading file ${link} to ${filePathToDownload}`);
-    return err;
+    console.error(err);
   });
 
 const loadFiles = ({ links, pageBody }) =>
@@ -88,4 +97,5 @@ export default (uri, outputDir) => {
     .then(pageData => changeAndParsePage(pageData, uri, dirPath, dirName))
     .then(parsedData => loadFiles(parsedData))
     .then(pageBody => fs.writeFile(filePath, pageBody, { flag: 'w', encoding: 'utf8' }));
+  // .catch(err => errorHandler(err));
 };

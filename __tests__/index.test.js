@@ -8,21 +8,27 @@ import pageLoader from '../src';
 nock.disableNetConnect();
 
 const addr = 'https://ru.hexlet.io';
-const templatesDir = '__tests__/__fixtures__/';
-const tmpDirTemplate = path.join(os.tmpdir(), 'hexlet-');
+const mocksDir = '__tests__/__fixtures__/';
 const tmpDirs = [];
+
+const getTmpDir = () => {
+  const tmpDirTemplate = path.join(os.tmpdir(), 'hexlet-');
+  const tmpDirPath = fs.mkdtemp(tmpDirTemplate);
+  tmpDirs.push(tmpDirPath);
+  return tmpDirPath;
+};
 
 beforeAll(async () => {
   nock(addr).get('/courses')
-    .delay(100).replyWithFile(200, path.join(templatesDir, 'page_before.html'));
+    .delay(50).replyWithFile(200, path.join(mocksDir, 'page_before.html'));
   nock(addr).get('/favicon-196x196.png')
-    .delay(20).replyWithFile(200, path.join(templatesDir, 'favicon-196x196.png'));
+    .delay(20).replyWithFile(200, path.join(mocksDir, 'favicon-196x196.png'));
   nock(addr).get('/684image.png')
-    .delay(200).replyWithFile(200, path.join(templatesDir, '684image.png'));
+    .delay(10).replyWithFile(200, path.join(mocksDir, '684image.png'));
   nock(addr).get('/ea7image.png')
-    .delay(80).replyWithFile(200, path.join(templatesDir, 'ea7image.png'));
+    .delay(40).replyWithFile(200, path.join(mocksDir, 'ea7image.png'));
   nock(addr).get('/f83image.png')
-    .delay(300).replyWithFile(200, path.join(templatesDir, 'f83image.png'));
+    .delay(100).replyWithFile(200, path.join(mocksDir, 'f83image.png'));
   nock(addr).get('/coursess').reply(404);
 });
 
@@ -31,15 +37,42 @@ afterAll(async () => {
 });
 
 test('download page content', async () => {
-  const tmpDirPath = await fs.mkdtemp(tmpDirTemplate);
-  tmpDirs.push(tmpDirPath);
-  const requiredContent = await fs.readFile('__tests__/__fixtures__/page_after.html', 'utf8');
-  const filePath = path.join(tmpDirPath, 'ru-hexlet-io-courses.html');
-  await pageLoader('https://ru.hexlet.io/courses', tmpDirPath);
+  const tmpDir = await getTmpDir();
+  const requiredContent = await fs.readFile(path.join(mocksDir, 'page_after.html'), 'utf8');
+  await pageLoader('https://ru.hexlet.io/courses', tmpDir);
+  const fileContent = await fs.readFile(path.join(tmpDir, 'ru-hexlet-io-courses.html'), 'utf8');
+  expect(fileContent).toBe(requiredContent);
+});
+
+// test('downloading nonexistent page', async () => {
+//   const tmpDir = await getTmpDir();
+//   try {
+//     await pageLoader('https://ru.hexlet.io/coursess', tmpDir);
+//     // expect(true).toBe(false);
+//   } catch (err) {
+//     console.error(err);
+//     expect(err.code).toContain('404');
+//   }
+// });
+
+test('parent directory not exist', async () => {
+  const tmpDir = await getTmpDir();
   try {
-    const fileContent = await fs.readFile(filePath, 'utf8');
-    expect(fileContent).toBe(requiredContent);
+    await pageLoader('https://ru.hexlet.io/courses', path.join(tmpDir, '/wrongpath'));
+    expect(true).toBe(false);
   } catch (err) {
-    expect(err).toBeUndefined();
+    expect(err.code).toEqual('ENOENT');
+  }
+});
+
+test('download file exists', async () => {
+  const tmpDir = await getTmpDir();
+  const filePath = path.join(tmpDir, 'ru-hexlet-io-courses.html');
+  await fs.writeFile(filePath, '');
+  try {
+    await pageLoader('https://ru.hexlet.io/courses', tmpDir);
+    expect(true).toBe(false);
+  } catch (err) {
+    expect(err.code).toEqual('EEXIST');
   }
 });
