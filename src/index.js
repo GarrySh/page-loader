@@ -11,11 +11,11 @@ const logError = debug('page-loader:error');
 
 const errorHandler = (err) => {
   if (err.response) {
-    const errorText = `error get page ${err.config.url} with status ${err.response.status}`;
-    logError(errorText);
-    return Promise.reject(errorText);
+    const errorMessage = `error get page ${err.config.url} with status ${err.response.status}`;
+    logError(errorMessage);
+    return Promise.reject(new Error(errorMessage));
   }
-  logError(`error ${err.code}`);
+  logError(`error ${err.message}`);
   return Promise.reject(err);
 };
 
@@ -47,7 +47,7 @@ const loadFile = (link, filePathToDownload) => axios
     return response.data.pipe(fs.createWriteStream(filePathToDownload));
   }).catch((err) => {
     logError(`error downloading file ${link} to ${filePathToDownload}`);
-    console.error(err);
+    return Promise.reject(err);
   });
 
 const loadFiles = new Listr([

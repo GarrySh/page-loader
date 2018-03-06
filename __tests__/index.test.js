@@ -48,13 +48,13 @@ test('download page content', async () => {
   expect(fileContent).toBe(requiredContent);
 });
 
-test('downloading nonexistent page', async () => {
+test('download nonexistent page', async () => {
   const tmpDir = await getTmpDir();
   try {
     await pageLoader('https://ru.hexlet.io/coursess', tmpDir);
     expect(true).toBe(false);
   } catch (err) {
-    expect(err).toContain('404');
+    expect(err.message).toContain('404');
   }
 });
 
